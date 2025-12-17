@@ -1,5 +1,11 @@
 extends layout
 
 block content
-  h1= title
-  p Version: #{version}
+  .hero-section
+    h1= title
+    p Welcome to Photo Gallery Application
+    p Version: #{version}
+
+  .links
+    a(href="/upload") Upload Image
+    a(href="/gallery") View Gallery

@@ -1,0 +1,135 @@
+extends layout
+
+block content
+  .gallery-header
+    h1= title
+
+  if images && images.length > 0
+    .gallery
+      each image in images
+        .image-card
+          .image-container
+            img(src='/images/' + image.path, alt=image.name, data-fullpath='/images/' + image.path, onclick='viewFullscreen(this)')
+          .image-info
+            h3.image-title #{image.name}
+            if image.author
+              p.author Author: #{image.author}
+            if image.description
+              p.description #{image.description}
+            p.date Uploaded: #{image.formattedDate}
+          .image-actions
+            a.download-btn(href='/images/' + image.path, download=image.path) Download
+            | &nbsp;
+            button.delete-btn(type='button', data-id=image.id, onclick='deleteImage(this)') Delete
+    .gallery-footer
+      .links
+        a(href="/upload") Upload Image
+  else
+    .no-images-container
+      h2 No images yet
+      p Be the first to upload an image to this gallery!
+      .links
+        a(href="/upload").btn Upload Image
+
+  // Fullscreen modal
+  .fullscreen-modal(id='fullscreenModal', style='display: none;')
+    .modal-content
+      span.close-btn(onclick='closeFullscreen()') &times;
+      img#fullscreenImage
+      .modal-info
+        h3#modalTitle
+        p#modalAuthor
+        p#modalDescription
+        p#modalDate
+
+  script.
+    function viewFullscreen(imgElement) {
+      // If event was triggered from img element directly
+      const modal = document.getElementById('fullscreenModal');
+      const fullImg = document.getElementById('fullscreenImage');
+      const title = document.getElementById('modalTitle');
+      const author = document.getElementById('modalAuthor');
+      const description = document.getElementById('modalDescription');
+      const date = document.getElementById('modalDate');
+
+      // Get image info from card
+      const card = imgElement.closest('.image-card');
+      const imgTitle = card.querySelector('.image-title').textContent;
+      const imgAuthor = card.querySelector('.author');
+      const imgDescription = card.querySelector('.description');
+      const imgDate = card.querySelector('.date');
+
+      fullImg.src = imgElement.src;
+      title.textContent = imgTitle;
+
+      if(imgAuthor) {
+        author.textContent = imgAuthor.textContent;
+        author.style.display = 'block';
+      } else {
+        author.style.display = 'none';
+      }
+
+      if(imgDescription) {
+        description.textContent = imgDescription.textContent;
+        description.style.display = 'block';
+      } else {
+        description.style.display = 'none';
+      }
+
+      if(imgDate) {
+        date.textContent = imgDate.textContent;
+        date.style.display = 'block';
+      } else {
+        date.style.display = 'none';
+      }
+
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    function closeFullscreen() {
+      document.getElementById('fullscreenModal').style.display = 'none';
+      document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
+
+    // Close modal when clicking outside the image
+    window.onclick = function(event) {
+      const modal = document.getElementById('fullscreenModal');
+      if (event.target === modal) {
+        closeFullscreen();
+      }
+    }
+
+    // Add keyboard navigation
+    document.onkeydown = function(event) {
+      const modal = document.getElementById('fullscreenModal');
+      if (modal.style.display === 'block') {
+        if (event.key === 'Escape') {
+          closeFullscreen();
+        }
+      }
+    }
+
+    function deleteImage(btn) {
+      const imageId = btn.getAttribute('data-id');
+      const card = btn.closest('.image-card');
+
+      if (confirm('Are you sure you want to delete this image?')) {
+        fetch('/image/' + imageId, {
+          method: 'DELETE'
+        })
+        .then(response => {
+          if (response.ok) {
+            card.remove();
+            if (document.querySelectorAll('.image-card').length === 0) {
+              location.reload(); // Reload page if no images left
+            }
+          } else {
+            alert('Error deleting image: ' + response.statusText);
+          }
+        })
+        .catch(error => {
+          alert('Error deleting image: ' + error.message);
+        });
+      }
+    }

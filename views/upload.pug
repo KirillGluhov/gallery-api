@@ -1,0 +1,93 @@
+extends layout
+
+block content
+  .form-container
+    h1 Upload New Image
+
+    form#uploadForm(action='/new', method='post', enctype='multipart/form-data')
+      .form-group
+        label(for='image') Select Image:
+        input#image(type='file', name='image', accept='image/*', required)
+
+      .form-group
+        label(for='name') Name (auto-filled from filename):
+        input#name(type='text', name='name', placeholder='Enter image name', required)
+
+      .form-group
+        label(for='author') Author:
+        input#author(type='text', name='author', placeholder='Enter author name')
+
+      .form-group
+        label(for='description') Description:
+        textarea#description(name='description', placeholder='Enter description', rows='3')
+
+      button.btn(type='submit') Upload Image
+
+    .preview-section(style='display:none; margin-top: 20px;')
+      h3 Image Preview:
+      img#imagePreview(style='max-width: 100%; max-height: 300px; border: 1px solid #ddd; border-radius: 4px;')
+
+  script.
+    // Automatically fill the name field with the filename when a file is selected
+    document.getElementById('image').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        // Show image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById('imagePreview');
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          document.querySelector('.preview-section').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+
+        // Auto-fill name from filename if field is empty
+        if (document.getElementById('name').value === '') {
+          // Remove extension and replace special characters with spaces
+          let cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ');
+          document.getElementById('name').value = cleanName;
+        }
+      } else {
+        // Hide preview if no file selected
+        document.getElementById('imagePreview').style.display = 'none';
+        document.querySelector('.preview-section').style.display = 'none';
+      }
+    });
+
+    // Handle form submission
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Uploading...';
+      submitBtn.disabled = true;
+
+      const formData = new FormData(this);
+
+      fetch('/new', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error('Upload failed: ' + response.statusText);
+        }
+      })
+      .then(data => {
+        alert('Image uploaded successfully!');
+        document.getElementById('uploadForm').reset();
+        document.getElementById('imagePreview').style.display = 'none';
+        document.querySelector('.preview-section').style.display = 'none';
+      })
+      .catch(error => {
+        alert('Error uploading image: ' + error.message);
+      })
+      .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+    });

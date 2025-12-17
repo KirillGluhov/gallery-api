@@ -3,5 +3,18 @@ html
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
   body
-    block content
+    header
+      .navbar
+        .nav-container
+          a.nav-link(href="/") PhotoGallery
+          nav.nav-menu
+            a.nav-link(href="/") Home
+            a.nav-link(href="/gallery") Gallery
+            a.nav-link(href="/upload") Upload
+    main
+      block content
+    footer
+      .footer
+        p PhotoGallery App &copy; #{new Date().getFullYear()}

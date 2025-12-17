@@ -29,39 +29,127 @@ router.post('/new', async function (req, res, next) {
         return;
     }
 
-    const extension = "." + req.files['image'].path.split('.')[1];
-    const fileName = uuidv4() + extension;
+    // Extract filename without extension to use as default name
+    const originalFilename = req.files['image'].name;
+    const fileExtension = "." + req.files['image'].path.split('.')[1];
+    const fileName = uuidv4() + fileExtension;
     const imageDataString = await streamToString(req.files['image']);
+
+    // Use original filename (without extension) as default name if name is not provided
+    const name = req.body['name'] || originalFilename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ');
+    const description = req.body['description'] || '';
+    const author = req.body['author'] || '';
 
     fs.writeFileSync('./public/images/' + fileName, imageDataString);
 
-    try {
-        db.connection.query(`INSERT INTO data (name, description, author, path) 
-                             VALUES ('${req.body['name']}', 
-                                    '${req.body['description']}',
-                                    '${req.body['author']}',
-                                    '${fileName}' );`, function (err, rows, fields) {
-            if (err) throw err;
+    // Use prepared statement to prevent SQL injection
+    const sql = 'INSERT INTO data (name, description, author, path) VALUES (?, ?, ?, ?)';
+    const values = [name, description, author, fileName];
 
-            console.log(rows);
-        });
-    } catch (err) {
-        res.sendStatus(500);
-        res.send(err.toString());
-        return;
-    }
+    db.connection.query(sql, values, function(err, rows, fields) {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).send(err.toString());
+            return;
+        }
 
-    res.send(fileName);
+        console.log(rows);
+        res.send(fileName);
+    });
 });
 
 /* GET all images */
 router.get('/all', async function (req, res, next) {
     db.connection.query('SELECT * from data', function (err, rows, fields) {
         if (err) {
-            res.sendStatus(500);
-            res.send(err);
+            console.error('Database error:', err);
+            res.status(500).send(err);
         } else {
-            res.send(rows);
+            res.json(rows || []);
+        }
+    });
+});
+
+/* GET upload page */
+router.get('/upload', function (req, res, next) {
+    res.render('upload', {title: 'Upload Image'});
+});
+
+/* DELETE image */
+router.delete('/image/:id', async function (req, res, next) {
+    const imageId = req.params.id;
+
+    // First get the image record to get the file path
+    const selectSql = 'SELECT path FROM data WHERE id = ?';
+    db.connection.query(selectSql, [imageId], function(err, rows) {
+        if (err) {
+            console.error('Database error when selecting image:', err);
+            res.status(500).send('Database error');
+            return;
+        }
+
+        if (rows.length === 0) {
+            res.status(404).send('Image not found');
+            return;
+        }
+
+        const imagePath = rows[0].path;
+
+        // Now delete the record from the database
+        const deleteSql = 'DELETE FROM data WHERE id = ?';
+        db.connection.query(deleteSql, [imageId], function(err, result) {
+            if (err) {
+                console.error('Database error when deleting image:', err);
+                res.status(500).send('Database error');
+                return;
+            }
+
+            if (result.affectedRows > 0) {
+                // Delete the actual image file from the server
+                const fs = require('fs');
+                const imagePathFull = './public/images/' + imagePath;
+
+                if (fs.existsSync(imagePathFull)) {
+                    fs.unlink(imagePathFull, (err) => {
+                        if (err) {
+                            console.error('Error deleting file:', err);
+                            // Still send success response as the DB record was deleted
+                        } else {
+                            console.log('File deleted successfully:', imagePathFull);
+                        }
+                    });
+                }
+
+                res.status(200).send('Image deleted successfully');
+            } else {
+                res.status(500).send('Failed to delete image from database');
+            }
+        });
+    });
+});
+
+/* GET gallery page */
+router.get('/gallery', async function (req, res, next) {
+    db.connection.query('SELECT * from data ORDER BY date DESC', function (err, rows, fields) {
+        if (err) {
+            console.error('Database error:', err);
+            res.status(500).render('error', {message: 'Database error', error: {}});
+        } else {
+            // Format dates for display
+            const formattedImages = (rows || []).map(image => {
+                if (image.date instanceof Date) {
+                    image.formattedDate = image.date.toLocaleDateString();
+                } else if (typeof image.date === 'string') {
+                    // Convert string to date if necessary
+                    const dateObj = new Date(image.date);
+                    image.formattedDate = dateObj.toLocaleDateString();
+                } else {
+                    image.formattedDate = image.date ? image.date.toString().substring(0, 10) : '';
+                }
+                return image;
+            });
+
+            res.render('gallery', {title: 'Photo Gallery', images: formattedImages});
         }
     });
 });
