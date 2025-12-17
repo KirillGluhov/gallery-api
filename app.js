@@ -8,11 +8,31 @@ let os = require("os");
 let cors = require('cors')
 
 let indexRouter = require('./routes/index');
+let analyticsRouter = require('./routes/analytics');
 let app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
+
+// Simple auth middleware for analytics
+function requireAuth(req, res, next) {
+    // For demo purposes, we'll allow access from localhost only
+    // In production, implement proper authentication
+    const allowedIps = ['127.0.0.1', '::1', 'localhost'];
+    const clientIp = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
+
+    if (allowedIps.includes(clientIp) || allowedIps.includes(req.get('X-Forwarded-For') || req.get('X-Real-IP'))) {
+        next();
+    } else {
+        // Log the unauthorized access attempt
+        console.log(`Unauthorized access attempt to analytics from IP: ${clientIp}`);
+        res.status(403).send('Access denied');
+    }
+}
+
+// Apply auth middleware to analytics routes
+app.use('/analytics', requireAuth, analyticsRouter);
 
 app.use(cors())
 app.use(logger('dev'));
@@ -33,6 +53,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+app.use('/analytics', analyticsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

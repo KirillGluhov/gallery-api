@@ -17,6 +17,7 @@ block content
             if image.description
               p.description #{image.description}
             p.date Uploaded: #{image.formattedDate}
+            p.views Views: #{image.views}
           .image-actions
             a.download-btn(href='/images/' + image.path, download=image.path) Download
             | &nbsp;
@@ -41,6 +42,7 @@ block content
         p#modalAuthor
         p#modalDescription
         p#modalDate
+        p#modalViews
 
   script.
     function viewFullscreen(imgElement) {
@@ -51,6 +53,7 @@ block content
       const author = document.getElementById('modalAuthor');
       const description = document.getElementById('modalDescription');
       const date = document.getElementById('modalDate');
+      const viewCount = document.getElementById('modalViews');
 
       // Get image info from card
       const card = imgElement.closest('.image-card');
@@ -58,6 +61,8 @@ block content
       const imgAuthor = card.querySelector('.author');
       const imgDescription = card.querySelector('.description');
       const imgDate = card.querySelector('.date');
+      const imgViews = card.querySelector('.views');
+      const imageId = card.querySelector('.delete-btn').getAttribute('data-id'); // Use delete button to get ID
 
       fullImg.src = imgElement.src;
       title.textContent = imgTitle;
@@ -81,6 +86,39 @@ block content
         date.style.display = 'block';
       } else {
         date.style.display = 'none';
+      }
+
+      if(imgViews) {
+        viewCount.textContent = imgViews.textContent;
+        viewCount.style.display = 'block';
+      } else {
+        viewCount.style.display = 'none';
+      }
+
+      // Update view count in the database
+      if(imageId) {
+        fetch('/image/' + imageId + '/view', {
+          method: 'POST'
+        })
+        .then(response => {
+          if (response.ok) {
+            // Update the view count display in the card and modal
+            const cardViewElement = card.querySelector('.views');
+            if(cardViewElement) {
+              const currentViews = parseInt(cardViewElement.textContent.replace('Views: ', ''));
+              const newViews = currentViews + 1;
+              cardViewElement.textContent = `Views: ${newViews}`;
+
+              // Also update the modal display
+              viewCount.textContent = `Views: ${newViews}`;
+            }
+          } else {
+            console.error('Error updating view count:', response.statusText);
+          }
+        })
+        .catch(error => {
+          console.error('Error updating view count:', error.message);
+        });
       }
 
       modal.style.display = 'block';

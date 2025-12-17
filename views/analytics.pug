@@ -1,0 +1,162 @@
+extends layout
+
+block content
+  .analytics-container
+    h1= title
+
+    // Статистика по количествам
+    .stats-section
+      h2 General Statistics
+      .stats-grid
+        .stat-card
+          h3 Total Images
+          .stat-value #{stats.total_images}
+        .stat-card
+          h3 Unique Authors
+          .stat-value #{stats.unique_authors}
+        .stat-card
+          h3 Active Authors
+          .stat-value #{stats.authors_with_images}
+
+    // Статистика по датам
+    .timeline-section
+      h2 Upload Timeline
+      if timeline && timeline.length > 0
+        .timeline-list
+          each item in timeline
+            .timeline-item
+              .date #{item.readable_date}
+              .count #{item.count} uploads
+              .bar-container
+                .bar(style=`width: ${(item.count / timeline[0].count) * 100}%`)
+      else
+        p No timeline data available.
+
+    // Статистика по авторам
+    .authors-section
+      h2 Top Authors
+      if authors && authors.length > 0
+        .authors-list
+          each author in authors
+            .author-item
+              .author-name #{author.author || 'Anonymous'}
+              .author-count #{author.image_count} images
+              .author-bar-container
+                .author-bar(style=`width: ${(author.image_count / authors[0].image_count) * 100}%`)
+      else
+        p No author data available.
+
+    // Статистика по популярности
+    .popular-section
+      h2 Most Viewed Images
+      if popular && popular.length > 0
+        .popular-list
+          each image in popular
+            if image.views > 0
+              .popular-item
+                .popular-name #{image.name}
+                .popular-views #{image.views} views
+                .popular-bar-container
+                  .popular-bar(style=`width: ${(image.views / popular[0].views) * 100}%`)
+      else
+        p No view data available.
+
+  style.
+    .analytics-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .stats-section {
+      margin-bottom: 40px;
+    }
+
+    .stats-section h2 {
+      margin-bottom: 20px;
+      color: #343a40;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 30px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #007bff;
+      margin: 15px 0;
+    }
+
+    .stat-card h3 {
+      margin: 0 0 10px 0;
+      color: #495057;
+    }
+
+    .timeline-section, .authors-section {
+      margin-bottom: 40px;
+    }
+
+    .timeline-section h2, .authors-section h2 {
+      margin-bottom: 20px;
+      color: #343a40;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 10px;
+    }
+
+    .timeline-list, .authors-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .timeline-item, .author-item {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .date, .author-name {
+      font-weight: bold;
+      min-width: 180px;
+      color: #495057;
+    }
+
+    .count, .author-count {
+      min-width: 80px;
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    .bar-container, .author-bar-container {
+      flex: 1;
+      height: 20px;
+      background-color: #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .bar, .author-bar {
+      height: 100%;
+      background-color: #28a745;
+      border-radius: 10px;
+      min-width: 20px;
+      transition: width 0.5s ease;
+    }

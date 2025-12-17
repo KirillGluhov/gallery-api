@@ -128,6 +128,27 @@ router.delete('/image/:id', async function (req, res, next) {
     });
 });
 
+/* POST increment view count */
+router.post('/image/:id/view', async function (req, res, next) {
+    const imageId = req.params.id;
+
+    const sql = 'UPDATE data SET views = views + 1 WHERE id = ?';
+
+    db.connection.query(sql, [imageId], function(err, result) {
+        if (err) {
+            console.error('Database error when updating view count:', err);
+            res.status(500).send('Database error');
+            return;
+        }
+
+        if (result.affectedRows > 0) {
+            res.status(200).send('View count updated');
+        } else {
+            res.status(404).send('Image not found');
+        }
+    });
+});
+
 /* GET gallery page */
 router.get('/gallery', async function (req, res, next) {
     db.connection.query('SELECT * from data ORDER BY date DESC', function (err, rows, fields) {

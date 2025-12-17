@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS db.`data` (
 	author varchar(255) NULL,
 	description varchar(2048) NULL,
 	`date` TIMESTAMP DEFAULT now() NOT NULL,
+	views INT DEFAULT 0 NOT NULL,
 	CONSTRAINT data_PK PRIMARY KEY (id)
 )
 ENGINE=InnoDB
