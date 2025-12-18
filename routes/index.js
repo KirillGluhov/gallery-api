@@ -1,8 +1,19 @@
 let fs = require('fs');
+let path = require('path');
 let express = require('express');
 let db = require("../db");
 let router = express.Router();
 let { v4: uuidv4 } = require('uuid');
+
+// Ensure public/images directory exists
+const imagesDir = path.join(__dirname, '../public/images');
+try {
+    if (!fs.existsSync(imagesDir)) {
+        fs.mkdirSync(imagesDir, { recursive: true });
+    }
+} catch (error) {
+    console.error('Error creating images directory:', error);
+}
 
 function streamToString(stream) {
     const chunks = [];
@@ -24,19 +35,18 @@ router.post('/new', async function (req, res, next) {
     console.log('Request files:', Object.getOwnPropertyNames(req.files));
 
     if (!req.files['image']) {
-        res.sendStatus(400);
-        res.send('image required');
-        return;
+        return res.status(400).send('image required');
     }
 
     // Extract filename without extension to use as default name
-    const originalFilename = req.files['image'].name;
-    const fileExtension = "." + req.files['image'].path.split('.')[1];
+    const originalFilename = req.files['image'] && req.files['image'].name ? req.files['image'].name : 'image';
+    const fileExtensionMatch = originalFilename.match(/\.[^/.]+$/);
+    const fileExtension = fileExtensionMatch ? fileExtensionMatch[0] : '.jpg'; // Default to .jpg if no extension
     const fileName = uuidv4() + fileExtension;
     const imageDataString = await streamToString(req.files['image']);
 
     // Use original filename (without extension) as default name if name is not provided
-    const name = req.body['name'] || originalFilename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ');
+    const name = req.body['name'] || (originalFilename ? originalFilename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ') : 'Untitled');
     const description = req.body['description'] || '';
     const author = req.body['author'] || '';
 
