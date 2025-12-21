@@ -5,7 +5,11 @@
   "scripts": {
     "start": "node ./bin/www",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "load-test:all": "node load-tests/run-artillery.js",
+    "load-test:gallery": "node load-tests/run-artillery.js gallery",
+    "load-test:upload": "node load-tests/run-artillery.js upload",
+    "load-test:interaction": "node load-tests/run-artillery.js interaction"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

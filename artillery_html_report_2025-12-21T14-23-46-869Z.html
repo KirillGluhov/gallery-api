@@ -1,0 +1,111 @@
+
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Сводный отчет по нагрузочному тестированию</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: #f4f7f9; color: #333; }
+        header { background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
+        header h1 { margin: 0; }
+        main { padding: 20px; }
+        .section { background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 20px; }
+        .section h2 { margin-top: 0; color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
+        .test-name { color: #2980b9; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: #ecf0f1; padding: 15px; border-radius: 5px; }
+        .card.wide { grid-column: 1 / -1; }
+        h4 { margin-top: 0; color: #7f8c8d; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #dcdcdc; }
+        tr:last-child td { border-bottom: none; }
+        td:last-child { font-weight: bold; text-align: right; }
+        .errors { color: #c0392b; }
+      </style>
+    </head>
+    <body>
+      <header>
+        <h1>Сводный отчет по нагрузочному тестированию</h1>
+        <p>Сгенерировано: 21.12.2025, 21:23:46</p>
+      </header>
+      <main>
+        
+    <div class="section">
+      <h2>Отчет по тесту: <span class="test-name">temp report gallery</span></h2>
+      <div class="grid">
+        <div class="card">
+          <h4>Ключевые метрики</h4>
+          <table>
+            <tr><td>Всего запросов</td><td>300</td></tr>
+            <tr><td>Успешных вирт. пользователей</td><td>150</td></tr>
+            <tr><td>Средний RPS</td><td>10.00</td></tr>
+            <tr><td>Ошибки</td><td class="">0</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h4>Задержка (Response Time)</h4>
+          <table>
+            <tr><td>Минимальная</td><td>1 мс</td></tr>
+            <tr><td>Средняя</td><td>9.20 мс</td></tr>
+            <tr><td>p95</td><td>21.1 мс</td></tr>
+            <tr><td>p99</td><td>22.9 мс</td></tr>
+            <tr><td>Максимальная</td><td>45 мс</td></tr>
+          </table>
+        </div>
+        <div class="card wide">
+          <h4>Время ответа по эндпоинтам:</h4><table><tr><th>Эндпоинт</th><th>Запросов</th><th>Среднее</th><th>p95</th><th>p99</th></tr><tr>
+        <td>/gallery</td>
+        <td>150</td>
+        <td>15.80 мс</td>
+        <td>22.9 мс</td>
+        <td>23.8 мс</td>
+      </tr><tr>
+        <td>/all</td>
+        <td>150</td>
+        <td>2.50 мс</td>
+        <td>4 мс</td>
+        <td>7.9 мс</td>
+      </tr></table>
+        </div>
+      </div>
+    </div>
+  
+    <div class="section">
+      <h2>Отчет по тесту: <span class="test-name">temp report upload</span></h2>
+      <div class="grid">
+        <div class="card">
+          <h4>Ключевые метрики</h4>
+          <table>
+            <tr><td>Всего запросов</td><td>60</td></tr>
+            <tr><td>Успешных вирт. пользователей</td><td>60</td></tr>
+            <tr><td>Средний RPS</td><td>2.00</td></tr>
+            <tr><td>Ошибки</td><td class="">0</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h4>Задержка (Response Time)</h4>
+          <table>
+            <tr><td>Минимальная</td><td>1 мс</td></tr>
+            <tr><td>Средняя</td><td>2.40 мс</td></tr>
+            <tr><td>p95</td><td>4 мс</td></tr>
+            <tr><td>p99</td><td>4 мс</td></tr>
+            <tr><td>Максимальная</td><td>4 мс</td></tr>
+          </table>
+        </div>
+        <div class="card wide">
+          <h4>Время ответа по эндпоинтам:</h4><table><tr><th>Эндпоинт</th><th>Запросов</th><th>Среднее</th><th>p95</th><th>p99</th></tr><tr>
+        <td>/new</td>
+        <td>60</td>
+        <td>2.40 мс</td>
+        <td>4 мс</td>
+        <td>4 мс</td>
+      </tr></table>
+        </div>
+      </div>
+    </div>
+  
+      </main>
+    </body>
+    </html>
+  

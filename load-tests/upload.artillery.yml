@@ -1,0 +1,24 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 2 # Загрузка - более тяжелая операция, поэтому пользователей меньше
+      name: "Image upload phase"
+
+scenarios:
+  - name: "Upload an image"
+    flow:
+      - post:
+          url: "/new"
+          # Указываем, что это multipart/form-data запрос
+          multipart:
+            - field: "author" # Текстовое поле
+              value: "artillery-tester-{{ $loopCount }}"
+            - field: "description"
+              value: "Uploaded by Artillery"
+            - field: "image" # Поле с файлом
+              # `path` указывает на файл, который нужно загрузить
+              path: "./test-image.jpg"
+          # Проверяем успешный статус
+          expect:
+            - statusCode: 200

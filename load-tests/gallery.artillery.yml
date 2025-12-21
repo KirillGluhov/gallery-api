@@ -1,0 +1,24 @@
+config:
+  # Указываем базовый URL для всех запросов
+  target: "http://localhost:3000"
+  # Определяем профиль нагрузки
+  phases:
+    - duration: 30  # Длительность фазы 30 секунд
+      arrivalRate: 5 # Каждую секунду создается 5 новых виртуальных пользователей
+      name: "Warm-up and browsing"
+
+scenarios:
+  - name: "Browse the gallery"
+    flow:
+      # Шаг 1: Зайти на главную страницу галереи
+      - get:
+          url: "/gallery"
+      # Шаг 2: Подождать 1 секунду (имитация чтения)
+      - think: 1
+      # Шаг 3: Запросить все данные через API
+      - get:
+          url: "/all"
+          # Проверяем, что ответ является валидным JSON
+          expect:
+            - contentType: json
+            - statusCode: 200

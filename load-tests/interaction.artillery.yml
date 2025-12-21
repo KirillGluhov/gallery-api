@@ -1,0 +1,58 @@
+
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 3 # Этот сценарий более сложный, снизим интенсивность
+      name: "Image full lifecycle"
+  # Указываем путь к файлу с кастомной логикой
+  processor: "./processor.js"
+
+scenarios:
+  - name: "Create, view, and then delete an image"
+    flow:
+      # --- Шаг 1: Создать новое изображение ---
+      - post:
+          url: "/new"
+          multipart:
+            - field: "image"
+              path: "./test-image.jpg"
+            - field: "author"
+              value: "lifecycle-tester"
+          # Захватываем ответ сервера (имя файла) в переменную 'imagePath'
+          capture:
+            - body: "$"
+              as: "imagePath"
+
+      # Небольшая пауза, чтобы дать БД время обработать запись
+      - think: 0.5
+
+      # --- Шаг 2: Получить все изображения, чтобы найти ID нового ---
+      - get:
+          url: "/all"
+          # Захватываем весь JSON-ответ в переменную 'allImages'
+          capture:
+            - json: "$"
+              as: "allImages"
+
+      # --- Шаг 3: Вызвать JS-функцию, чтобы найти ID по имени файла ---
+      - function: "findImageIdByPath"
+
+      # --- Шаг 4: Увеличить счетчик просмотров (только если ID был найден) ---
+      - post:
+          url: "/image/{{ imageId }}/view"
+          # `if` позволяет выполнять шаг только при выполнении условия
+          if:
+            equals:
+              - "{{ imageId !== undefined }}"
+              - true
+
+      - think: 1
+
+      # --- Шаг 5: Удалить созданное изображение ---
+      - delete:
+          url: "/image/{{ imageId }}"
+          if:
+            equals:
+              - "{{ imageId !== undefined }}"
+              - true
